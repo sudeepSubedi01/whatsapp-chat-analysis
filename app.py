@@ -3,6 +3,7 @@ import pandas as pd
 from collections import Counter
 import streamlit as st
 import matplotlib.pyplot as plt
+import seaborn as sns
 import preprocessor
 import helper
 
@@ -16,7 +17,7 @@ if uploaded_file is not None:
 
   # DATA PREPROCESSING
   df = preprocessor.preprocess(data)
-  st.dataframe(df)
+  # st.dataframe(df)
 
   # SELECTBOX
   user_list = df['user'].unique().tolist()
@@ -40,6 +41,7 @@ if uploaded_file is not None:
     with col4:
       st.title(num_links)
       st.header('Links Shared')
+      
 
     # MOST BUSY PERSONS
     if selected_user == 'Overall':
@@ -63,6 +65,44 @@ if uploaded_file is not None:
     st.title('Most Common Words')
     most_common_df = helper.most_common_words(selected_user,df)
     # st.dataframe(most_common_df)
+    # fig,ax = plt.subplots()
+    # ax.barh(most_common_df[0], most_common_df[1], color='#ffaa00')
+    # st.pyplot(fig)
+    st.bar_chart(most_common_df,x='word',y='frequency', horizontal=True, color='#ffaa00')
+
+    # MOST COMMON EMOJIS
+    st.title('Most Common Emojis')
+    emoji_df = helper.emoji_helper(selected_user, df)
+    st.bar_chart(emoji_df,x='emoji',y='frequency', horizontal=True)
+
+    # MONTHLY TIMELINE
+    st.title('Monthly Timeline')
+    m_timeline = helper.monthly_timeline(selected_user,df)
+    st.line_chart(m_timeline,x='time',y='message', color='#008000')
+
+    # DAILY TIMELINE
+    st.title('Daily Timeline')
+    d_timeline = helper.daily_timeline(selected_user, df)
+    st.line_chart(d_timeline, x='only_date',y='message')
+    # st.dataframe(d_timeline)
+
+    # WEEKLY/MONTHLY ACTIVITY
+    st.title('Activity Map')
+    w_timeline = helper.weekly_activity_map(selected_user,df)
+    m_timeline = helper.monthly_activity_map(selected_user,df)
+    # st.dataframe(w_timeline)
+
+    col1,col2 = st.columns(2,gap='large')
+    with col1:
+      st.header('Most Busy Day')
+      st.bar_chart(w_timeline,x='day_name',y='message')
+    with col2:
+      st.header('Most Busy Month')
+      st.bar_chart(m_timeline,x='month',y='message')
+
+    # HEATMAP
+    st.title('HeatMap')
+    pt = helper.activity_heatmap(selected_user,df)
     fig,ax = plt.subplots()
-    ax.barh(most_common_df[0], most_common_df[1])
+    ax = sns.heatmap(pt)
     st.pyplot(fig)
